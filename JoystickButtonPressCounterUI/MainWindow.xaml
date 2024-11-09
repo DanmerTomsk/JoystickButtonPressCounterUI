@@ -1,0 +1,81 @@
+﻿<Window x:Class="JoystickButtonPressCounterUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:JoystickButtonPressCounterUI"
+        mc:Ignorable="d"
+        Title="Счётчик патронов" Height="450" Width="800"
+        Topmost = "False" 
+        Icon="Images\Counter_10.png">
+    <Window.Resources>
+        <ControlTemplate TargetType="ContentControl" x:Key="CounterProgressTemplate">
+            <ContentControl>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ProgressBar Foreground="{Binding Path=Color}" Value="{Binding Path=RemainderPercent, Mode=OneWay}" Maximum="100" Minimum="0" MouseDoubleClick="ProgressBar_MouseDoubleClick">
+                            <ProgressBar.LayoutTransform>
+                                <RotateTransform Angle="180" />
+                            </ProgressBar.LayoutTransform>
+                        </ProgressBar>
+                        <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <TextBlock Text="{Binding Path=Name}" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" />
+                            <TextBlock Text="{Binding StringFormat={}{0:f1}%, Path=RemainderPercent, Mode=OneWay}" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Двойной клик для перезарядки"  HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <Border Grid.Row="1" BorderThickness="0,0,2,0" BorderBrush="Black"/>
+                        <Button Grid.Column="2" Content="Settings" Click="SettingsButton_Click"/>
+                        <Button Grid.Column="3" Content="Del"/>
+                    </Grid>
+                    <Border Grid.Row="1" BorderThickness="2" BorderBrush="Black"/>
+                </Grid>
+            </ContentControl>
+        </ControlTemplate>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto"  />
+        </Grid.RowDefinitions>
+        <Menu Height="25" VerticalAlignment="Top">
+            <MenuItem Header="Профиль" >
+                <MenuItem Header="Сохранить" Click="SaveButton_Click"/>
+                <MenuItem Header="Загрузить" Click="LoadButton_Click"/>
+            </MenuItem>
+            <MenuItem Header="Добавить" Name="AddButton" Click="AddButton_Click" />
+            <MenuItem Header="Настройки">
+                <MenuItem Header="Прозрачность" Visibility="Collapsed">
+                    <MenuItem Header="Сделать прозрачным" IsCheckable="True" Checked="TransparancyOnMenuItem_Checked" Unchecked="TransparancyOnMenuItem_Unchecked"/>
+                    <Slider 
+                        Value="0"
+                        Minimum="0"
+                        Maximum="100"
+                        Orientation="Horizontal"
+                        IsSelectionRangeEnabled="True"
+                        Width="200"
+                        TickPlacement="BottomRight"
+                        TickFrequency="10" AutoToolTipPlacement="BottomRight" 
+                        ValueChanged="TransparencySlider_ValueChanged" />
+                </MenuItem>
+                <MenuItem Header="Поверх окон" IsCheckable="True" Checked="TopmostMenuItem_Checked"  Unchecked="TopmostMenuItem_Unchecked"/>
+                <MenuItem Header="COM" SubmenuOpened="ComMenuItem_SubmenuOpened" >
+                    <ComboBox x:Name="ComItemsCombobox" SelectionChanged="ComItemsCombobox_SelectionChanged" />
+                    <MenuItem x:Name="ComButtonsSettings" Header="Кнопки" Click="ComButtonsSettings_Click" />
+                </MenuItem>
+            </MenuItem>
+        </Menu>
+        <Grid Grid.Row="1" x:Name="CounterGrid"/>
+    </Grid>
+</Window>
+

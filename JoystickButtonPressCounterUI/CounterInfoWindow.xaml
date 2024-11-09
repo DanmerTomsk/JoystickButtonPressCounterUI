@@ -1,0 +1,29 @@
+﻿<Window x:Class="JoystickButtonPressCounterUI.CounterInfoWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:JoystickButtonPressCounterUI"
+        mc:Ignorable="d"
+        Title="Информация о счётчике" Height="240" Width="500">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Vertical" Margin="5" >
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Имя: " FontSize="20"/>
+                <TextBox x:Name="NameTextBox" MinWidth="200" VerticalContentAlignment="Center" />
+            </StackPanel>
+            <TextBlock Text="Для начала нажмите кнопку на джойстике и отпустите в конце боезапаса."/>
+            <TextBlock Text="Если будет использоваться только COM, то ждать боезапаса не нужно."/>
+            <TextBlock x:Name="MillisecondsTextBlock" Text="{Binding CurrentMax}"/>
+            <Button Content="Сбросить" Click="DropButton_Click"/>
+        </StackPanel>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="5,5,10,5" >
+            <Button Content="Принять" IsDefault="True" Click="CreateButton_Click" Height="30" Width="70" Margin="5"/>
+            <Button Content="Отмена" IsCancel="True" Height="30" Width="70" />
+        </StackPanel>
+    </Grid>
+</Window>
