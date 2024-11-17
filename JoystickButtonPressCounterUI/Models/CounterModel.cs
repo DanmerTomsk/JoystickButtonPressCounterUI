@@ -9,13 +9,13 @@
 
         public int MaxMilliseconds { get; }
 
-        public int ButtonNumber { get; }
+        public byte ButtonNumber { get; }
 
         public uint JoyId { get; }
 
         public byte Order { get; set; } = EmptyOrderValue;
 
-        public CounterModel(string name, int maxMilliseconds, int buttonNumber, uint joyId)
+        public CounterModel(string name, int maxMilliseconds, byte buttonNumber, uint joyId)
         {
             Name = name;
             MaxMilliseconds = maxMilliseconds;

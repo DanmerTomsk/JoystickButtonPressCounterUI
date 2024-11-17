@@ -25,13 +25,12 @@ namespace JoystickButtonPressCounterUI
             _mapping.Add(joyButtonInfo, [mapping.ComButtonNumber]);
         }
 
-        public void RemoveMapping(ComButtonMapping comButtonMapping)
+        public void RemoveMapping(JoyButtonInfo buttonInfo)
         {
-            var joyButtonInfo = new JoyButtonInfo(comButtonMapping);
-            _mapping.Remove(joyButtonInfo);
+            _mapping.Remove(buttonInfo);
         }
 
-        public void SetPort(string serialPortName)
+        public bool TrySetPort(string serialPortName)
         {
             if (_currentSerialPort != null)
             {
@@ -46,15 +45,30 @@ namespace JoystickButtonPressCounterUI
                 {
                     _currentSerialPort.Open();
                 }
-                catch(UnauthorizedAccessException) { }
+                catch(Exception) 
+                { 
+                    _currentSerialPort = null;
+                    return false;
+                }
             }
 
             JoystickObserver.Observer.ButtonsStateChanged -= Observer_ButtonsStateChanged;
             JoystickObserver.Observer.ButtonsStateChanged += Observer_ButtonsStateChanged;
+            return true;
+        }
+
+        public string? GetCurrentPortName()
+        {
+            return _currentSerialPort?.PortName;
         }
 
         private void Observer_ButtonsStateChanged(uint joyId, ButtonsStateChange[] changes)
-        {            
+        {
+            if (_currentSerialPort == null)
+            {
+                return;
+            }
+
             var commands = new List<byte>(changes.Length);
             foreach (var change in changes)
             {

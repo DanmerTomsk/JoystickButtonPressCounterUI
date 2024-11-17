@@ -7,7 +7,9 @@
         mc:Ignorable="d"
         Title="Счётчик патронов" Height="450" Width="800"
         Topmost = "False" 
-        Icon="Images\Counter_10.png">
+        Icon="Images\Counter_10.png"
+        Closing="Window_Closing" Loaded="Window_Loaded"
+        >
     <Window.Resources>
         <ControlTemplate TargetType="ContentControl" x:Key="CounterProgressTemplate">
             <ContentControl>
@@ -71,7 +73,6 @@
                 <MenuItem Header="Поверх окон" IsCheckable="True" Checked="TopmostMenuItem_Checked"  Unchecked="TopmostMenuItem_Unchecked"/>
                 <MenuItem Header="COM" SubmenuOpened="ComMenuItem_SubmenuOpened" >
                     <ComboBox x:Name="ComItemsCombobox" SelectionChanged="ComItemsCombobox_SelectionChanged" />
-                    <MenuItem x:Name="ComButtonsSettings" Header="Кнопки" Click="ComButtonsSettings_Click" />
                 </MenuItem>
             </MenuItem>
         </Menu>

@@ -62,6 +62,12 @@ namespace JoystickButtonPressCounterUI.ViewModels
             UsedMilliseconds = 0;
 
             JoystickObserver.Observer.AddToObserve(model.JoyId, model.ButtonNumber, ButtonPressed);
+            var newMapping = new ComButtonMapping((byte)(model.Order + 1))
+            {
+                JoystickButtonNumber = (byte)model.ButtonNumber,
+                JoystickId = model.JoyId,
+            };
+            SerialPortWorker.Singleton.AddMapping(newMapping);
         }
 
         public void ProgressBar_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -69,7 +75,7 @@ namespace JoystickButtonPressCounterUI.ViewModels
             UsedMilliseconds = 0;
         }
 
-        private void ButtonPressed(uint joyId, int allButtons)
+        private void ButtonPressed(uint joyId, byte buttonNumber)
         {
             UsedMilliseconds += Configs.RequestIntervalInMilliseconds;
         }

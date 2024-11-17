@@ -9,7 +9,7 @@ namespace JoystickButtonPressCounterUI.Observer
     {
         private Dispatcher _uiDispatcher;
 
-        public delegate void JoystickButtonPressEventHandler(uint joyId, int allButtons);
+        public delegate void JoystickButtonPressEventHandler(uint joyId, byte buttonNumber);
         public delegate void JoystickButtonStateChangedEventHandler(uint joyId, ButtonsStateChange[] changes);
 
         public event JoystickButtonPressEventHandler? SomeButtonPress;
@@ -54,25 +54,25 @@ namespace JoystickButtonPressCounterUI.Observer
 
                     if (info.dwButtonNumber != 0)
                     {
+                        var pressedButtonsNumbers = GetPressedButtonNumbers(info.dwButtons);
                         if (info.dwButtonNumber == 1)
                         {
-                            OnOneButtonPressed(joyId, info.dwButtons);
+                            OnOneButtonPressed(joyId, pressedButtonsNumbers.First());
                         }
 
-                        for (int i = 0; i < 32; i++)
+                        foreach (var number in pressedButtonsNumbers)
                         {
-                            if ((info.dwButtons & (1 << i)) != 0)
+                            var del = delegates[number]; 
+                            
+                            if (del is null)
                             {
-                                var del = delegates[i];
-
-                                if (del is null)
-                                {
-                                    del = new EventElement();
-                                    delegates[i] = del;
-                                }
-
-                                _uiDispatcher.BeginInvoke(() => del.Dispatch(joyId, info.dwButtons));
+                                continue;
+                                //del = new EventElement();
+                                //delegates[number] = del;
                             }
+
+                            _uiDispatcher.BeginInvoke(() => del.Dispatch(joyId, number));
+
                         }
                     }
                 }
@@ -83,20 +83,14 @@ namespace JoystickButtonPressCounterUI.Observer
 
         public void AddToObserve(uint joyId, int number, JoystickButtonPressEventHandler handler)
         {
-            EventElement[] delegatesArray = GetDelegates(joyId, number);
-            for (int i = 0; i < delegatesArray.Length; i++)
-            {
-                delegatesArray[i] += handler;
-            }
+            var eventDelegate = GetDelegate(joyId, number);
+            eventDelegate += handler;
         }
 
         public void RemoveFromObserve(uint joyId, int number, JoystickButtonPressEventHandler handler)
         {
-            EventElement[] delegatesArray = GetDelegates(joyId, number);
-            for (int i = 0; i < delegatesArray.Length; i++)
-            {
-                delegatesArray[i] -= handler;
-            }
+            var eventDelegate = GetDelegate(joyId, number);
+            eventDelegate -= handler;
         }
 
         public void Start(Dispatcher dispatcher)
@@ -142,29 +136,35 @@ namespace JoystickButtonPressCounterUI.Observer
             return result.ToArray();            
         }
 
-        private EventElement[] GetDelegates(uint joyId, int number)
+        private byte[] GetPressedButtonNumbers(int dwButtons)
         {
-            var result = new List<EventElement>();
+            var result = new List<byte>();
+            for (byte i = 0; i < 32; i++)
+            {
+                if ((dwButtons & (1 << i)) != 0)
+                {
+                    result.Add(i);
+                }
+            }
+
+            return result.ToArray();
+        }
+
+        private EventElement GetDelegate(uint joyId, int number)
+        {
             if (!_joyDelegatesDict.TryGetValue(joyId, out var delegates))
             {
                 AddNewObserver(joyId);
                 delegates = _joyDelegatesDict[joyId];
             }
 
-            for (int i = 0; i < 32; i++)
-            {
-                if ((number & (1 << i)) != 0)
-                {
-                    if (delegates[i] is null)
-                    {
-                        delegates[i] = new EventElement();
-                    }
 
-                    result.Add(delegates[i]);
-                }
+            if (delegates[number] is null)
+            {
+                delegates[number] = new EventElement();
             }
 
-            return result.ToArray();
+            return delegates[number];
         }
 
         private void AddNewObserver(uint joyId)
@@ -177,7 +177,7 @@ namespace JoystickButtonPressCounterUI.Observer
             thread.Start(new ThreadParams(joyId, delegates));
         }
 
-        private void OnOneButtonPressed(uint joyId, int number)
+        private void OnOneButtonPressed(uint joyId, byte number)
         {
             if (SomeButtonPress != null)
             {
@@ -234,11 +234,11 @@ namespace JoystickButtonPressCounterUI.Observer
         {
             protected event JoystickButtonPressEventHandler eventDelegate;
 
-            public void Dispatch(uint joyId, int allButtons)
+            public void Dispatch(uint joyId, byte buttonNumber)
             {
                 if (eventDelegate != null)
                 {                    
-                    eventDelegate(joyId, allButtons);
+                    eventDelegate(joyId, buttonNumber);
                 }
             }
 

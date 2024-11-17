@@ -1,9 +1,11 @@
-﻿using JoystickButtonPressCounterUI.Models;
+﻿using JoystickButtonPressCounterUI.Dtos;
+using JoystickButtonPressCounterUI.Models;
 using JoystickButtonPressCounterUI.Observer;
 using JoystickButtonPressCounterUI.ViewModels;
 using Microsoft.Win32;
 using System.IO;
 using System.IO.Ports;
+using System.Reflection;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
@@ -69,10 +71,13 @@ namespace JoystickButtonPressCounterUI
             }
 
             var newCounter = editCounterDialog.ResultCounter;
+            newCounter.Order = oldCounter.Source.Order;
             var counterIndex = _bulletCounters.IndexOf(oldCounter);
             var newViewModel = new BulletCounterViewModel(newCounter);
             _bulletCounters[counterIndex] = newViewModel;
             parent.DataContext = newViewModel;
+
+            SerialPortWorker.Singleton.RemoveMapping(new JoyButtonInfo(oldCounter.Source.JoyId, oldCounter.Source.ButtonNumber));
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -116,6 +121,14 @@ namespace JoystickButtonPressCounterUI
             }
 
             models.OrderBy(model => model.Order).ToList();
+            for (int i = 0; i < models.Length; i++)
+            {
+                if (models[i].Order == CounterModel.EmptyOrderValue)
+                {
+                    models[i].Order = (byte)i;
+                }
+            }
+
             RemoveAllCounters();
 
             foreach (var model in models)
@@ -126,6 +139,11 @@ namespace JoystickButtonPressCounterUI
 
         private void AddNewCounter(CounterModel newCounter)
         {
+            if (newCounter.Order == CounterModel.EmptyOrderValue)
+            {
+                newCounter.Order = (byte)(_bulletCounters.Count);
+            }
+
             var bulletCounter = new BulletCounterViewModel(newCounter);
 
             CounterGrid.RowDefinitions.Add(new RowDefinition());
@@ -142,10 +160,6 @@ namespace JoystickButtonPressCounterUI
 
             CounterGrid.Children.Add(newContentControl);
             _bulletCounters.Add(bulletCounter);
-            if (bulletCounter.Source.Order == CounterModel.EmptyOrderValue)
-            {
-                bulletCounter.Source.Order = (byte)(_bulletCounters.Count - 1);
-            }
         }
 
         private void RemoveAllCounters()
@@ -195,7 +209,17 @@ namespace JoystickButtonPressCounterUI
                 return;
             }
 
-            SerialPortWorker.Singleton.SetPort(serialPortName);
+            SetSerialPort(serialPortName);
+        }
+
+        private bool SetSerialPort(string serialPortName)
+        {
+            var isComSetted = SerialPortWorker.Singleton.TrySetPort(serialPortName);
+            if (!isComSetted)
+            {
+                MessageBox.Show($"Не удалось выставить порт {serialPortName}. Проверьте, подключено ли устройство именно в этот порт", "Не удалось подключиться к COM", MessageBoxButton.OK, MessageBoxImage.Warning);               
+            }
+            return isComSetted;
         }
 
         private void ComMenuItem_SubmenuOpened(object sender, RoutedEventArgs e)
@@ -226,14 +250,71 @@ namespace JoystickButtonPressCounterUI
             }
         }
 
-        private void ComButtonsSettings_Click(object sender, RoutedEventArgs e)
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            var ComButtonsSettingsWindow = new ComButtonsSettingsWindow()
-            {
-                Owner = this,
-            };
+            var locationFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var settingsFilePath = Path.Combine(locationFolder, "lastSettings.json");
 
-            ComButtonsSettingsWindow.Show();
+            var currentSettings = new Settings(SerialPortWorker.Singleton.GetCurrentPortName(), _bulletCounters.Select(counter => counter.Source).ToArray());
+            var json = JsonSerializer.Serialize(currentSettings);
+
+            if (!File.Exists(settingsFilePath))
+            {
+                File.WriteAllText(settingsFilePath, json);
+                return;
+            }
+
+            var prevSettings = File.ReadAllText(settingsFilePath);
+
+            if (prevSettings == json)
+            {
+                return;
+            }
+
+            var shouldSave = MessageBox.Show("Сохранить изменения?", "Что-то поменялось", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (shouldSave == MessageBoxResult.Yes)
+            {
+                File.WriteAllText(settingsFilePath, json);
+            }
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            var locationFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var settingsFilePath = Path.Combine(locationFolder, "lastSettings.json");
+
+            if (!File.Exists(settingsFilePath))
+            {
+                return;
+            }
+
+            var shouldLoadLastState = MessageBox.Show("Открыть настройки, которые были при выходе?", "Воротать как было?", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (shouldLoadLastState == MessageBoxResult.No)
+            {
+                return;
+            }
+
+            var json = File.ReadAllText(settingsFilePath);
+            var currentSettings = new Settings(SerialPortWorker.Singleton.GetCurrentPortName(), _bulletCounters.Select(counter => counter.Source).ToArray());
+            var lastSettings = JsonSerializer.Deserialize<Settings>(json);
+
+            if (lastSettings is null)
+            {
+                MessageBox.Show($"Не получилось открыть последние настройки. Скиньте, пожалуйста, файл {settingsFilePath} разработчику", "Не удалось =(", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            if (lastSettings.ComPortName is not null)
+            {
+                if (SetSerialPort(lastSettings.ComPortName))
+                {
+                    ComItemsCombobox.SelectedItem = lastSettings.ComPortName;
+                }
+            }
+
+            Array.ForEach(lastSettings.Models, AddNewCounter);
         }
     }
 }

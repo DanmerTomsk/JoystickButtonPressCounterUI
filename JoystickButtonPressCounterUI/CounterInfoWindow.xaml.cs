@@ -22,7 +22,7 @@ namespace JoystickButtonPressCounterUI
                 OnPropertyChanged(nameof(CurrentMax));
             }
         }
-        private int CurrentButtonNumber { get; set; } = 0;
+        private byte CurrentButtonNumber { get; set; } = 0;
 
         private uint CurrentJoyId { get; set; } = 0;
 
@@ -54,12 +54,12 @@ namespace JoystickButtonPressCounterUI
                 PropertyChanged(this, new PropertyChangedEventArgs(prop));
         }
 
-        private void Observer_SomeButtonPress(uint joyId, int allButtons)
+        private void Observer_SomeButtonPress(uint joyId, byte buttonNumber)
         {
 
-            if (CurrentButtonNumber != allButtons || CurrentJoyId != joyId)
+            if (CurrentButtonNumber != buttonNumber || CurrentJoyId != joyId)
             {
-                CurrentButtonNumber = allButtons;
+                CurrentButtonNumber = buttonNumber;
                 CurrentJoyId = joyId;
                 CurrentMax = 0;
                 return;
