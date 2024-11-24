@@ -80,7 +80,9 @@
                     Width="200"
                     TickFrequency="10"
                     AutoToolTipPlacement="BottomRight"
-                    ValueChanged="JoyInfoDelaySlider_ValueChanged"/>
+                    ValueChanged="JoyInfoDelaySlider_ValueChanged"
+                    ToolTip="Задержка в обновлении инфо о кнопках джойстиков. Чем больше, тем выше ошибка, но меньше нагрузка на проц."/>
+
                 <MenuItem Header="COM" SubmenuOpened="ComMenuItem_SubmenuOpened" >
                     <ComboBox x:Name="ComItemsCombobox" SelectionChanged="ComItemsCombobox_SelectionChanged" />
                 </MenuItem>
