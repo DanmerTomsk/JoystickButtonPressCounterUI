@@ -293,6 +293,7 @@ namespace JoystickButtonPressCounterUI
 
             if (shouldLoadLastState == MessageBoxResult.No)
             {
+                JoyInfoDelaySlider.Value = Configs.DefaultRequestIntervalInMilliseconds;
                 return;
             }
 
@@ -302,6 +303,7 @@ namespace JoystickButtonPressCounterUI
             if (lastSettings is null)
             {
                 MessageBox.Show($"Не получилось открыть последние настройки. Скиньте, пожалуйста, файл {settingsFilePath} разработчику", "Не удалось =(", MessageBoxButton.OK, MessageBoxImage.Error);
+                JoyInfoDelaySlider.Value = Configs.DefaultRequestIntervalInMilliseconds;
                 return;
             }
 
@@ -315,7 +317,7 @@ namespace JoystickButtonPressCounterUI
 
             if (lastSettings.JoyInfoRequestDelayInMs is null)
             {
-                JoyInfoDelaySlider.Value = 50;
+                JoyInfoDelaySlider.Value = Configs.DefaultRequestIntervalInMilliseconds;
             }
             else
             {
