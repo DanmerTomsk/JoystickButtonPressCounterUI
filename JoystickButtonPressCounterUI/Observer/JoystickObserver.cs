@@ -67,8 +67,6 @@ namespace JoystickButtonPressCounterUI.Observer
                             if (del is null)
                             {
                                 continue;
-                                //del = new EventElement();
-                                //delegates[number] = del;
                             }
 
                             _uiDispatcher.BeginInvoke(() => del.Dispatch(joyId, number));

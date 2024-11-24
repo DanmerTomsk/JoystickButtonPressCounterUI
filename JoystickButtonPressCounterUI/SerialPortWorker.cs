@@ -38,7 +38,7 @@ namespace JoystickButtonPressCounterUI
                 _currentSerialPort.Dispose();
             }
 
-            _currentSerialPort = new SerialPort(serialPortName);
+            _currentSerialPort = new SerialPort(serialPortName, 115200);
             if (!_currentSerialPort.IsOpen)
             {
                 try

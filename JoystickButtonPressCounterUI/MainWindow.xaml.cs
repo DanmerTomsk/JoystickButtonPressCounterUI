@@ -255,7 +255,7 @@ namespace JoystickButtonPressCounterUI
             var locationFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var settingsFilePath = Path.Combine(locationFolder, "lastSettings.json");
 
-            var currentSettings = new Settings(SerialPortWorker.Singleton.GetCurrentPortName(), _bulletCounters.Select(counter => counter.Source).ToArray());
+            var currentSettings = new Settings(SerialPortWorker.Singleton.GetCurrentPortName(), _bulletCounters.Select(counter => counter.Source).ToArray(), (int)JoyInfoDelaySlider.Value);
             var json = JsonSerializer.Serialize(currentSettings);
 
             if (!File.Exists(settingsFilePath))
@@ -297,7 +297,6 @@ namespace JoystickButtonPressCounterUI
             }
 
             var json = File.ReadAllText(settingsFilePath);
-            var currentSettings = new Settings(SerialPortWorker.Singleton.GetCurrentPortName(), _bulletCounters.Select(counter => counter.Source).ToArray());
             var lastSettings = JsonSerializer.Deserialize<Settings>(json);
 
             if (lastSettings is null)
@@ -314,7 +313,21 @@ namespace JoystickButtonPressCounterUI
                 }
             }
 
+            if (lastSettings.JoyInfoRequestDelayInMs is null)
+            {
+                JoyInfoDelaySlider.Value = 50;
+            }
+            else
+            {
+                JoyInfoDelaySlider.Value = lastSettings.JoyInfoRequestDelayInMs.Value;
+            }
+
             Array.ForEach(lastSettings.Models, AddNewCounter);
+        }
+
+        private void JoyInfoDelaySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            Configs.RequestIntervalInMilliseconds = (int)e.NewValue;
         }
     }
 }

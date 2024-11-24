@@ -71,6 +71,16 @@
                         ValueChanged="TransparencySlider_ValueChanged" />
                 </MenuItem>
                 <MenuItem Header="Поверх окон" IsCheckable="True" Checked="TopmostMenuItem_Checked"  Unchecked="TopmostMenuItem_Unchecked"/>
+                <Slider 
+                    x:Name="JoyInfoDelaySlider" 
+                    Orientation="Horizontal" 
+                    TickPlacement="BottomRight" 
+                    Minimum="1" 
+                    Maximum="100" 
+                    Width="200"
+                    TickFrequency="10"
+                    AutoToolTipPlacement="BottomRight"
+                    ValueChanged="JoyInfoDelaySlider_ValueChanged"/>
                 <MenuItem Header="COM" SubmenuOpened="ComMenuItem_SubmenuOpened" >
                     <ComboBox x:Name="ComItemsCombobox" SelectionChanged="ComItemsCombobox_SelectionChanged" />
                 </MenuItem>
