@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Счётчик патронов" Height="450" Width="800"
         Topmost = "False" 
-        Icon="Images\Counter_10.png"
+        Icon="/Images/Counter_10.png"
         Closing="Window_Closing" Loaded="Window_Loaded"
         >
     <Window.Resources>

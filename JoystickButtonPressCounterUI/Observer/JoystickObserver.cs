@@ -15,7 +15,7 @@ namespace JoystickButtonPressCounterUI.Observer
         public event JoystickButtonPressEventHandler? SomeButtonPress;
         public event JoystickButtonStateChangedEventHandler? ButtonsStateChanged;
 
-        private Dictionary<uint, EventElement[]> _joyDelegatesDict = new Dictionary<uint, EventElement[]>();
+        private EventElement[][] _joyDelegates = new EventElement[Configs.MaxJoystickCount][];
 
         private Dictionary<uint, int> _joyButtonStateDict = new Dictionary<uint, int>();
 
@@ -120,7 +120,7 @@ namespace JoystickButtonPressCounterUI.Observer
             _joyButtonStateDict[joyId] = newState;
 
             var result = new List<ButtonsStateChange>();
-            for (byte i = 0; i < 32; i++)
+            for (byte i = 0; i < Configs.MaxJoystickButtonsCount; i++)
             {
                 var changedButtonNumber = changedStates & (1 << i);
                 if (changedButtonNumber == 0)
@@ -137,7 +137,7 @@ namespace JoystickButtonPressCounterUI.Observer
         private byte[] GetPressedButtonNumbers(int dwButtons)
         {
             var result = new List<byte>();
-            for (byte i = 0; i < 32; i++)
+            for (byte i = 0; i < Configs.MaxJoystickButtonsCount; i++)
             {
                 if ((dwButtons & (1 << i)) != 0)
                 {
@@ -150,12 +150,17 @@ namespace JoystickButtonPressCounterUI.Observer
 
         private EventElement GetDelegate(uint joyId, int number)
         {
-            if (!_joyDelegatesDict.TryGetValue(joyId, out var delegates))
+            if (_joyDelegates.Length <= joyId)
             {
-                AddNewObserver(joyId);
-                delegates = _joyDelegatesDict[joyId];
+                throw new IndexOutOfRangeException($"Id джойстика == {joyId}, что больше, чем допустимо по документации. Напишите разработчику");
             }
 
+            EventElement[] delegates = _joyDelegates[joyId];
+            if (delegates == null)
+            {
+                AddNewObserver(joyId);
+                delegates = _joyDelegates[joyId];
+            }
 
             if (delegates[number] is null)
             {
@@ -167,8 +172,8 @@ namespace JoystickButtonPressCounterUI.Observer
 
         private void AddNewObserver(uint joyId)
         {
-            var delegates = new EventElement[32];
-            _joyDelegatesDict.Add(joyId, delegates);
+            var delegates = new EventElement[Configs.MaxJoystickButtonsCount];
+            _joyDelegates[joyId] = delegates;
 
             var thread = new Thread(ThreadFunc);
             thread.IsBackground = true;
@@ -194,7 +199,7 @@ namespace JoystickButtonPressCounterUI.Observer
         private uint[] FindJoystick()
         {
             var result = new List<uint>();
-            for (uint i = 0; i <= 15; i++)
+            for (uint i = 0; i <= Configs.MaxJoystickCount; i++)
             {
                 JoyInfoEx info = new JoyInfoEx();
                 info.dwSize = Marshal.SizeOf(info);

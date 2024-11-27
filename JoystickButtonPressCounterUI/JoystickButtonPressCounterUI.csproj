@@ -6,11 +6,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <PackageIcon>Counter_10.png</PackageIcon>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="Images\Counter_10.png" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.IO.Ports" Version="8.0.0" />
@@ -18,7 +15,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Images\Counter_10.png" />
+    <Resource Include="Images\Counter_10.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Images\Counter_10.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

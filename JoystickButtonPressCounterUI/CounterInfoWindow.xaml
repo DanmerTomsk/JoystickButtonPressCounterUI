@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:JoystickButtonPressCounterUI"
         mc:Ignorable="d"
+        Icon="/Images/Counter_10.png"
         Title="Информация о счётчике" Height="240" Width="500">
     <Grid>
         <Grid.RowDefinitions>

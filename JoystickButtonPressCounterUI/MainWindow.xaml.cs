@@ -286,16 +286,17 @@ namespace JoystickButtonPressCounterUI
 
             if (!File.Exists(settingsFilePath))
             {
+                SetDefaultSettings();
                 return;
             }
 
-            var shouldLoadLastState = MessageBox.Show("Открыть настройки, которые были при выходе?", "Воротать как было?", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            /*var shouldLoadLastState = MessageBox.Show("Открыть настройки, которые были при выходе?", "Воротать как было?", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (shouldLoadLastState == MessageBoxResult.No)
             {
                 JoyInfoDelaySlider.Value = Configs.DefaultRequestIntervalInMilliseconds;
                 return;
-            }
+            }*/
 
             var json = File.ReadAllText(settingsFilePath);
             var lastSettings = JsonSerializer.Deserialize<Settings>(json);
@@ -303,7 +304,7 @@ namespace JoystickButtonPressCounterUI
             if (lastSettings is null)
             {
                 MessageBox.Show($"Не получилось открыть последние настройки. Скиньте, пожалуйста, файл {settingsFilePath} разработчику", "Не удалось =(", MessageBoxButton.OK, MessageBoxImage.Error);
-                JoyInfoDelaySlider.Value = Configs.DefaultRequestIntervalInMilliseconds;
+                SetDefaultSettings();
                 return;
             }
 
@@ -317,7 +318,7 @@ namespace JoystickButtonPressCounterUI
 
             if (lastSettings.JoyInfoRequestDelayInMs is null)
             {
-                JoyInfoDelaySlider.Value = Configs.DefaultRequestIntervalInMilliseconds;
+                SetDefaultSettings();
             }
             else
             {
@@ -330,6 +331,11 @@ namespace JoystickButtonPressCounterUI
         private void JoyInfoDelaySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             Configs.RequestIntervalInMilliseconds = (int)e.NewValue;
+        }
+
+        private void SetDefaultSettings()
+        {
+            JoyInfoDelaySlider.Value = Configs.DefaultRequestIntervalInMilliseconds;
         }
     }
 }
