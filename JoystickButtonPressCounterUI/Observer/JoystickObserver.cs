@@ -17,7 +17,7 @@ namespace JoystickButtonPressCounterUI.Observer
 
         private EventElement[][] _joyDelegates = new EventElement[Configs.MaxJoystickCount][];
 
-        private Dictionary<uint, int> _joyButtonStateDict = new Dictionary<uint, int>();
+        private int?[] _joyButtonState = new int?[Configs.MaxJoystickCount];
 
         [DllImport("winmm.dll")]
         public static extern int joyGetPosEx(uint uJoyID, ref JoyInfoEx pji);
@@ -104,20 +104,21 @@ namespace JoystickButtonPressCounterUI.Observer
 
         private ButtonsStateChange[] GetButtonStateChanges(uint joyId, int newState)
         {
-            if (!_joyButtonStateDict.TryGetValue(joyId, out var oldState))
+            var oldState = _joyButtonState[joyId];
+            if (oldState == null)
             {
-                _joyButtonStateDict.Add(joyId, newState);
+                _joyButtonState[joyId] = newState;
                 return [];
             }
 
-            var changedStates = newState ^ oldState;
+            var changedStates = newState ^ oldState.Value;
 
             if (changedStates == 0)
             {
                 return [];
             }
 
-            _joyButtonStateDict[joyId] = newState;
+            _joyButtonState[joyId] = newState;
 
             var result = new List<ButtonsStateChange>();
             for (byte i = 0; i < Configs.MaxJoystickButtonsCount; i++)
